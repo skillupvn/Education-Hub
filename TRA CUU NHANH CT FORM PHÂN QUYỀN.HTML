@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Tra Cứu Công Thức Tự Động Hóa - Google Sheets & Apps Script</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 25px;
+            animation: slideDown 0.6s ease-out;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1em;
+            opacity: 0.95;
+        }
+
+        .search-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-clear {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #e0e0e0;
+            box-shadow: none;
+        }
+
+        .btn-clear:hover {
+            background: #e8e8e8;
+            border-color: #999;
+            transform: none;
+        }
+
+        .categories-wrapper {
+            margin-top: 15px;
+        }
+
+        .categories-label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+
+        .categories-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
+
+        .category-btn {
+            padding: 10px 12px;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #333;
+            text-align: center;
+        }
+
+        .category-btn:hover {
+            background: #e8e8e8;
+            border-color: #667eea;
+        }
+
+        .category-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .stats {
+            text-align: center;
+            color: white;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .results-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 18px;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .formula-card {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .formula-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-left-color: #764ba2;
+        }
+
+        .formula-card h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+            font-size: 1.05em;
+            word-break: break-word;
+        }
+
+        .category-tag {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            font-weight: 600;
+            width: fit-content;
+        }
+
+        .formula-card p {
+            color: #666;
+            margin: 6px 0;
+            line-height: 1.5;
+            font-size: 0.93em;
+        }
+
+        .formula-card strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        .label {
+            color: #667eea;
+            font-weight: 600;
+            display: block;
+            margin-top: 8px;
+            margin-bottom: 3px;
+            font-size: 0.9em;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 10px;
+            margin: 6px 0 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #d63384;
+            overflow-x: auto;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .copy-btn {
+            display: inline-block;
+            padding: 6px 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 6px;
+            margin-right: 6px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+
+        .copy-btn.copied {
+            background: #28a745;
+        }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px 20px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .btn, .btn-clear {
+                width: 100%;
+            }
+
+            .results-section {
+                grid-template-columns: 1fr;
+            }
+
+            .categories-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .formula-card {
+                padding: 15px;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .info-box {
+            background: rgba(255,255,255,0.1);
+            border-left: 4px solid white;
+            padding: 12px 15px;
+            border-radius: 6px;
+            color: white;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Công Thức Tự Động Hóa Google Sheets & Apps Script</h1>
+            <p>Tra cứu nhanh hơn 200+ công thức - Sao chép một click - Dùng ngay cho dự án của bạn</p>
+        </header>
+
+        <div class="search-section">
+            <div class="info-box">
+                💡 Mẹo: Tìm kiếm theo tên công thức hoặc từ khóa | Chọn danh mục để lọc nhanh | Nhấn "Sao chép" để dùng ngay
+            </div>
+
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="🔍 Tìm công thức (lương, tuổi, email, tính toán...)">
+                <button class="btn" onclick="performSearch()">🔍 Tìm Kiếm</button>
+                <button class="btn-clear" onclick="clearSearch()">✕ Xóa</button>
+            </div>
+
+            <div class="categories-wrapper">
+                <span class="categories-label">📂 Lọc theo nhóm:</span>
+                <div class="categories-section" id="categoriesSection"></div>
+            </div>
+
+            <div class="stats">
+                📈 Tổng <span id="totalFormulas">0</span> công thức | Hiển thị <span id="displayCount">0</span> kết quả
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection"></div>
+
+        <div class="footer">
+            <p>🚀 Được cập nhật với tất cả công thức chính thức | Dùng cho Google Sheets & Google Apps Script</p>
+            <p style="margin-top: 10px;">✨ Tiết kiệm thời gian, giảm sai sót, làm việc chuyên nghiệp hơn</p>
+        </div>
+    </div>
+
+    <script>
+        // Dữ liệu công thức toàn bộ từ tài liệu gốc
+        const formulas = [
+            // NHÓM 1: CỨ PHÁP CƠ BẢN - PHÉP TOÁN
+            { category: 'Cú pháp cơ bản', title: 'Cộng hai giá trị', purpose: 'Tính tổng lương', formula: '{Lương cơ bản} + {Phụ cấp}', example: 'Cộng lương cơ bản với phụ cấp', sheetsFormula: '=A2+B2' },
+            { category: 'Cú pháp cơ bản', title: 'Trừ hai giá trị', purpose: 'Tính lãi/lỗ', formula: '{Tổng thu} - {Tổng chi}', example: 'Tính lãi/lỗ trong tháng', sheetsFormula: '=A2-B2' },
+            { category: 'Cú pháp cơ bản', title: 'Nhân hai giá trị', purpose: 'Tính thành tiền', formula: '{Số lượng} * {Đơn giá}', example: 'Nhân số lượng với đơn giá', sheetsFormula: '=A2*B2' },
+            { category: 'Cú pháp cơ bản', title: 'Chia hai giá trị', purpose: 'Tính trung bình', formula: '{Tổng lương} / {Số ngày}', example: 'Chia tổng lương cho số ngày', sheetsFormula: '=A2/B2' },
+            
+            // NHÓM 2: GHÉP CHUỖI & ĐỊNH DẠNG
+            { category: 'Xử lý văn bản', title: 'Ghép tên đầy đủ', purpose: 'Tạo tên đầy đủ', formula: '{Họ} + " " + {Tên}', example: 'Ghép "Nguyễn" + "Văn A"', sheetsFormula: '=A2&" "&B2' },
+            { category: 'Xử lý văn bản', title: 'Thêm đơn vị vào giá trị', purpose: 'Định dạng giá trị', formula: '{Lương} + " VNĐ"', example: 'Thêm "VNĐ" vào lương', sheetsFormula: '=A2&" VNĐ"' },
+            { category: 'Xử lý văn bản', title: 'Tạo định dạng văn bản', purpose: 'Ghép thông tin chi tiết', formula: '"Nhân viên " + {Mã NV} + ": " + {Họ tên}', example: 'Tạo dòng "Nhân viên NV001: Nguyễn Văn A"', sheetsFormula: '="Nhân viên "&A2&": "&B2' },
+
+            // NHÓM 3: NGÀY & GIỜ
+            { category: 'Ngày & Giờ', title: 'Ghi ngày hiện tại (Cách 1)', purpose: 'Lấy ngày tháng năm', formula: 'new Date().getDate() + "/" + new Date().getMonth() + "/" + new Date().getFullYear()', example: 'Lấy ngày hôm nay (định dạng D/M/Y)', sheetsFormula: '=TODAY()' },
+            { category: 'Ngày & Giờ', title: 'Ghi ngày hiện tại (Cách 2)', purpose: 'Lấy ngày theo định dạng GB', formula: 'new Date().toLocaleString("en-GB").replace(/,/, "")', example: 'Lấy ngày giờ hiện tại', sheetsFormula: '=NOW()' },
+            { category: 'Ngày & Giờ', title: 'Ngày hiện tại theo VN', purpose: 'Định dạng Việt Nam', formula: 'new Date().toLocaleDateString("vi-VN")', example: 'Lấy ngày theo định dạng VN (dd/mm/yyyy)', sheetsFormula: '=TEXT(TODAY(),"dd/mm/yyyy")' },
+            { category: 'Ngày & Giờ', title: 'Ngày mai', purpose: 'Tính ngày tiếp theo', formula: 'new Date(Date.now() + 24*60*60*1000).toLocaleDateString()', example: 'Lấy ngày mai', sheetsFormula: '=TODAY()+1' },
+            { category: 'Ngày & Giờ', title: 'Giờ hiện tại', purpose: 'Lấy giờ phút', formula: 'new Date().getHours() + ":" + new Date().getMinutes().toString().padStart(2, "0")', example: 'Lấy giờ hiện tại (HH:MM)', sheetsFormula: '=TEXT(NOW(),"hh:mm")' },
+            { category: 'Ngày & Giờ', title: 'Timestamp hiện tại', purpose: 'Lấy mili-giây từ 1970', formula: 'Date.now()', example: 'Lấy số mili-giây hiện tại', sheetsFormula: '=UNIX_TIMESTAMP()*1000' },
+            { category: 'Ngày & Giờ', title: 'Tính tuổi', purpose: 'Tính tuổi từ ngày sinh', formula: 'new Date().getFullYear() - new Date({Ngày sinh}).getFullYear()', example: 'Tính tuổi của nhân viên', sheetsFormula: '=YEAR(TODAY())-YEAR(C2)' },
+            { category: 'Ngày & Giờ', title: 'Tính số ngày làm việc', purpose: 'Tính thời gian dự án', formula: 'Math.floor(({Ngày kết thúc} - {Ngày bắt đầu}) / (1000*60*60*24))', example: 'Tính số ngày từ ngày bắt đầu đến kết thúc', sheetsFormula: '=D2-C2' },
+            { category: 'Ngày & Giờ', title: 'Tính số giờ làm việc', purpose: 'Tính giờ làm việc', formula: '{Giờ kết thúc} - {Giờ bắt đầu}', example: 'Tính giờ làm từ sáng đến chiều', sheetsFormula: '=D2-C2' },
+            { category: 'Ngày & Giờ', title: 'Tính thâm niên (năm)', purpose: 'Tính số năm làm việc', formula: '(new Date() - new Date({Ngày vào làm})) / (1000*60*60*24*365)', example: 'Tính thâm niên làm việc', sheetsFormula: '=(TODAY()-C2)/365' },
+            { category: 'Ngày & Giờ', title: 'Tính tuổi nghề', purpose: 'Tính năm kinh nghiệm', formula: 'Math.floor((new Date() - new Date({Ngày bắt đầu nghề})) / (1000*60*60*24*365))', example: 'Tính năm kinh nghiệm trong ngành', sheetsFormula: '=INT((TODAY()-C2)/365)' },
+            { category: 'Ngày & Giờ', title: 'Thời gian còn lại đến deadline', purpose: 'Tính ngày còn lại', formula: 'Math.ceil(({Deadline} - new Date()) / (1000*60*60*24)) + " ngày"', example: 'Tính số ngày đến deadline', sheetsFormula: '=D2-TODAY()&" ngày"' },
+            { category: 'Ngày & Giờ', title: 'Tháng hiện tại', purpose: 'Lấy tháng hiện tại', formula: 'new Date().getMonth() + 1', example: 'Lấy số tháng (1-12)', sheetsFormula: '=MONTH(TODAY())' },
+            { category: 'Ngày & Giờ', title: 'Quý hiện tại', purpose: 'Lấy quý năm nay', formula: '"Q" + Math.ceil((new Date().getMonth() + 1) / 3)', example: 'Lấy quý (Q1, Q2, Q3, Q4)', sheetsFormula: '="Q"&ROUNDUP(MONTH(TODAY())/3,0)' },
+            { category: 'Ngày & Giờ', title: 'Tuần trong năm', purpose: 'Tính tuần thứ mấy', formula: 'Math.ceil((new Date() - new Date(new Date().getFullYear(), 0, 1)) / (7*24*60*60*1000))', example: 'Tính tuần thứ bao nhiêu trong năm', sheetsFormula: '=WEEKNUM(TODAY())' },
+            { category: 'Ngày & Giờ', title: 'Năm tài chính', purpose: 'Tính năm tài chính', formula: 'new Date().getMonth() >= 3 ? new Date().getFullYear() : new Date().getFullYear() - 1', example: 'Tính năm tài chính (từ tháng 4)', sheetsFormula: '=IF(MONTH(TODAY())>=4,YEAR(TODAY()),YEAR(TODAY())-1)' },
+            { category: 'Ngày & Giờ', title: 'Hạn thanh toán', purpose: 'Tính hạn thanh toán', formula: 'new Date(new Date({Ngày hóa đơn}).getTime() + {Số ngày} * 24*60*60*1000).toLocaleDateString()', example: 'Tính hạn 30 ngày từ ngày hóa đơn', sheetsFormula: '=C2+D2' },
+            { category: 'Ngày & Giờ', title: 'Ngày nghỉ hưu', purpose: 'Tính ngày nghỉ hưu', formula: 'new Date(new Date({Ngày sinh}).setFullYear(new Date({Ngày sinh}).getFullYear() + 60)).toLocaleDateString()', example: 'Tính ngày nghỉ hưu (60 tuổi)', sheetsFormula: '=DATE(YEAR(C2)+60,MONTH(C2),DAY(C2))' },
+            { category: 'Ngày & Giờ', title: 'Ngày cuối tháng', purpose: 'Lấy ngày cuối cùng', formula: 'new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate()', example: 'Lấy ngày cuối cùng của tháng', sheetsFormula: '=DAY(DATE(YEAR(TODAY()),MONTH(TODAY())+1,0))' },
+            { category: 'Ngày & Giờ', title: 'Ngày đầu tuần', purpose: 'Lấy ngày đầu tuần', formula: 'new Date(new Date() - new Date().getDay() * 24*60*60*1000).toLocaleDateString()', example: 'Lấy ngày thứ 2 đầu tuần', sheetsFormula: '=TODAY()-WEEKDAY(TODAY(),2)+1' },
+
+            // NHÓM 4: LƯƠNG & THUẾ & TÀI CHÍNH
+            { category: 'Lương & Thuế', title: 'Tính tổng lương', purpose: 'Tính lương tháng đầy đủ', formula: '{Lương cơ bản} + {Phụ cấp} + {Thưởng}', example: 'Ghép lương cơ bản + phụ cấp + thưởng', sheetsFormula: '=C2+D2+E2' },
+            { category: 'Lương & Thuế', title: 'Tính lương sau thuế', purpose: 'Lương thực nhận', formula: '{Tổng lương} - ({Tổng lương} * 0.1)', example: 'Trừ 10% thuế', sheetsFormula: '=C2-(C2*0.1)' },
+            { category: 'Lương & Thuế', title: 'Tính thu nhập thực', purpose: 'Thu nhập sau khấu trừ', formula: '{Lương} + {Hoa hồng} - {Khấu trừ}', example: 'Cộng lương và hoa hồng, trừ khấu trừ', sheetsFormula: '=C2+D2-E2' },
+            { category: 'Lương & Thuế', title: 'Tính hoa hồng bán hàng', purpose: 'Tính tiền hoa hồng', formula: '{Doanh số} * {Tỷ lệ hoa hồng} / 100', example: 'Doanh số 50M × 5% = 2.5M', sheetsFormula: '=C2*D2/100' },
+            { category: 'Lương & Thuế', title: 'Tính lương overtime', purpose: 'Tính tiền làm thêm giờ', formula: '{Lương cơ bản} / 30 / 8 * {Giờ tăng ca} * 1.5', example: 'Tính OT với hệ số 1.5', sheetsFormula: '=C2/30/8*D2*1.5' },
+            { category: 'Lương & Thuế', title: 'Tính VAT (10%)', purpose: 'Tính thuế VAT', formula: '{Thành tiền} * 0.1', example: 'Tính VAT 10%', sheetsFormula: '=C2*0.1' },
+            { category: 'Lương & Thuế', title: 'Tính tổng tiền có VAT', purpose: 'Tính giá bán', formula: '{Thành tiền} + {VAT}', example: 'Cộng tiền gốc + VAT', sheetsFormula: '=C2+D2' },
+            { category: 'Lương & Thuế', title: 'Tính chiết khấu', purpose: 'Tính tiền giảm giá', formula: '{Đơn giá} * {Số lượng} * {Tỷ lệ CK} / 100', example: 'Tính CK khi mua sỉ', sheetsFormula: '=C2*D2*E2/100' },
+            { category: 'Lương & Thuế', title: 'Tính thành tiền sau CK', purpose: 'Giá sau chiết khấu', formula: '{Tổng tiền} - {Chiết khấu}', example: 'Giá sau trừ chiết khấu', sheetsFormula: '=C2-D2' },
+            { category: 'Lương & Thuế', title: 'Tính lãi suất hàng tháng', purpose: 'Lãi suất tháng', formula: '{Lãi suất năm} / 12', example: 'Chia lãi suất năm cho 12', sheetsFormula: '=C2/12' },
+            { category: 'Lương & Thuế', title: 'Tính tiền lãi', purpose: 'Tính tiền lãi sinh', formula: '{Số tiền gốc} * {Lãi suất} / 100', example: 'Tính lãi ngân hàng', sheetsFormula: '=C2*D2/100' },
+            { category: 'Lương & Thuế', title: 'Tính ROI (%)', purpose: 'Đánh giá hiệu quả đầu tư', formula: '({Lợi nhuận} - {Vốn đầu tư}) / {Vốn đầu tư} * 100', example: 'Tính phần trăm lợi nhuận', sheetsFormula: '=(C2-D2)/D2*100' },
+            { category: 'Lương & Thuế', title: 'Tính tỷ lệ tăng trưởng', purpose: 'Tính phần trăm tăng', formula: '({Giá trị hiện tại} - {Giá trị trước}) / {Giá trị trước} * 100', example: 'Tính tăng trưởng doanh số', sheetsFormula: '=(C2-D2)/D2*100' },
+            { category: 'Lương & Thuế', title: 'Tính giá bán lẻ', purpose: 'Định giá sản phẩm', formula: '{Giá nhập} * (1 + {Tỷ lệ lợi nhuận} / 100)', example: 'Nhập 100k, lãi 30% = 130k', sheetsFormula: '=C2*(1+D2/100)' },
+            { category: 'Lương & Thuế', title: 'Tính Margin (%)', purpose: 'Tính lợi nhuận %', formula: '({Giá bán} - {Giá vốn}) / {Giá bán} * 100', example: 'Tính % lợi nhuận trên giá bán', sheetsFormula: '=(C2-D2)/C2*100' },
+            { category: 'Lương & Thuế', title: 'Tính điểm hòa vốn', purpose: 'Tính số sản phẩm cần bán', formula: '{Chi phí cố định} / ({Giá bán} - {Chi phí biến đổi})', example: 'Tính break-even point', sheetsFormula: '=D2/(C2-E2)' },
+            { category: 'Lương & Thuế', title: 'Tính tiết kiệm hàng tháng', purpose: 'Tính tiền tiết kiệm', formula: '{Thu nhập} - {Chi phí}', example: 'Tiết kiệm = Thu nhập - Chi phí', sheetsFormula: '=C2-D2' },
+            { category: 'Lương & Thuế', title: 'Tính phí vận chuyển', purpose: 'Tính chi phí ship', formula: '{Khối lượng} * {Đơn giá vận chuyển}', example: 'Tính phí ship theo kg', sheetsFormula: '=C2*D2' },
+            { category: 'Lương & Thuế', title: 'Tính tổng chi phí', purpose: 'Tính tổng chi phí', formula: '{Chi phí sản xuất} + {Chi phí vận hành} + {Chi phí khác}', example: 'Cộng tất cả chi phí', sheetsFormula: '=C2+D2+E2' },
+            { category: 'Lương & Thuế', title: 'Tính khấu hao', purpose: 'Tính khấu hao tài sản', formula: '{Giá trị tài sản} / {Số năm khấu hao}', example: 'Khấu hao máy móc hàng năm', sheetsFormula: '=C2/D2' },
+
+            // NHÓM 5: XỬ LÝ VĂN BẢN & TẠO MÃ
+            { category: 'Xử lý văn bản', title: 'Họ tên đầy đủ', purpose: 'Tạo tên đầy đủ', formula: '{Họ} + " " + {Tên}', example: 'Ghép họ và tên', sheetsFormula: '=C2&" "&D2' },
+            { category: 'Xử lý văn bản', title: 'Tên viết tắt', purpose: 'Tạo chữ cái đầu', formula: '{Họ}.charAt(0) + {Tên}.charAt(0)', example: 'Nguyễn Văn A → NA', sheetsFormula: '=LEFT(C2,1)&LEFT(D2,1)' },
+            { category: 'Xử lý văn bản', title: 'Tên hiển thị', purpose: 'Ghép chức vụ và tên', formula: '{Chức vụ} + " " + {Họ tên}', example: 'Giám đốc Nguyễn Văn A', sheetsFormula: '=C2&" "&D2' },
+            { category: 'Xử lý văn bản', title: 'Tạo username', purpose: 'Tạo tên đăng nhập', formula: '{Tên}.toLowerCase().replace(/\\s+/g, "") + {Năm sinh}', example: '"van a1990" → "vana1990"', sheetsFormula: '=LOWER(SUBSTITUTE(C2," ",""))&D2' },
+            { category: 'Xử lý văn bản', title: 'Mã nhân viên', purpose: 'Tạo mã NV chuẩn', formula: '"NV" + {ID}.toString().padStart(4, "0")', example: 'ID=15 → NV0015', sheetsFormula: '="NV"&TEXT(C2,"0000")' },
+            { category: 'Xử lý văn bản', title: 'Mã đơn hàng', purpose: 'Tạo mã đơn', formula: '"DH" + new Date().getFullYear() + {ID}.toString().padStart(6, "0")', example: 'DH2025000123', sheetsFormula: '="DH"&YEAR(TODAY())&TEXT(C2,"000000")' },
+            { category: 'Xử lý văn bản', title: 'Mã sản phẩm', purpose: 'Tạo mã SP', formula: '{Loại}.substring(0,2).toUpperCase() + "-" + {ID}', example: '"laptop" → LA-123', sheetsFormula: '=UPPER(LEFT(C2,2))&"-"&D2' },
+            { category: 'Xử lý văn bản', title: 'Mã khách hàng', purpose: 'Tạo mã KH', formula: '"KH" + {Thành phố}.substring(0,2).toUpperCase() + {ID}', example: 'KHHN001 (Hà Nội)', sheetsFormula: '="KH"&UPPER(LEFT(C2,2))&D2' },
+            { category: 'Xử lý văn bản', title: 'Mã QR', purpose: 'Tạo mã QR', formula: '"QR_" + {ID} + "_" + Date.now()', example: 'QR_123_1705334400000', sheetsFormula: '="QR_"&C2&"_"&UNIX_TIMESTAMP()*1000' },
+            { category: 'Xử lý văn bản', title: 'Mã barcode', purpose: 'Tạo mã vạch', formula: '{Loại}.substring(0,3) + Date.now().toString().slice(-6)', example: 'LAP400000', sheetsFormula: '=LEFT(C2,3)&RIGHT(TEXT(NOW(),"000000000000"),6)' },
+            { category: 'Xử lý văn bản', title: 'Email công ty', purpose: 'Tạo email', formula: '{Tên}.toLowerCase() + "@company.com"', example: '"vana@company.com"', sheetsFormula: '=LOWER(SUBSTITUTE(C2," ",""))&"@company.com"' },
+            { category: 'Xử lý văn bản', title: 'Format số điện thoại', purpose: 'Định dạng SĐT', formula: '{SĐT}.replace(/(\\d{4})(\\d{3})(\\d{3})/, "$1-$2-$3")', example: '"0123456789" → "0123-456-789"', sheetsFormula: '=TEXT(C2,"0000-000-000")' },
+            { category: 'Xử lý văn bản', title: 'Địa chỉ đầy đủ', purpose: 'Ghép địa chỉ', formula: '{Số nhà} + " " + {Đường} + ", " + {Quận} + ", " + {Thành phố}', example: '123 Nguyễn Trãi, Q.1, TP.HCM', sheetsFormula: '=C2&" "&D2&", "&E2&", "&F2' },
+            { category: 'Xử lý văn bản', title: 'Signature', purpose: 'Tạo chữ ký', formula: '{Họ tên} + " - " + {Chức vụ} + " | " + {Công ty}', example: 'Nguyễn Văn A - GĐ | ABC Corp', sheetsFormula: '=C2&" - "&D2&" | "&E2' },
+            { category: 'Xử lý văn bản', title: 'Tên file', purpose: 'Tạo tên file', formula: '{Tên dự án} + "_" + new Date().toISOString().slice(0,10) + ".pdf"', example: 'DuAn_2025-12-15.pdf', sheetsFormula: '=C2&"_"&TEXT(TODAY(),"yyyy-mm-dd")&".pdf"' },
+            { category: 'Xử lý văn bản', title: 'Đường dẫn file', purpose: 'Tạo đường dẫn', formula: '"/uploads/" + {Năm} + "/" + {Tháng} + "/" + {Tên file}', example: '/uploads/2025/12/file.pdf', sheetsFormula: '="/uploads/"&C2&"/"&TEXT(D2,"00")&"/"&E2' },
+            { category: 'Xử lý văn bản', title: 'Tiêu đề báo cáo', purpose: 'Tạo tiêu đề', formula: '"Báo cáo " + {Loại BC} + " tháng " + new Date().getMonth()', example: 'Báo cáo Doanh Thu tháng 12', sheetsFormula: '="Báo cáo "&C2&" tháng "&MONTH(TODAY())' },
+            { category: 'Xử lý văn bản', title: 'Ghi chú tự động', purpose: 'Tạo ghi chú', formula: '"Tạo bởi " + {Người tạo} + " lúc " + new Date().toLocaleDateString()', example: 'Tạo bởi Admin lúc 15/12/2025', sheetsFormula: '="Tạo bởi "&C2&" lúc "&TEXT(TODAY(),"dd/mm/yyyy")' },
+            { category: 'Xử lý văn bản', title: 'Hashtag', purpose: 'Tạo hashtag', formula: '"#" + {Từ khóa}.toLowerCase().replace(/\\s+/g, "")', example: '#GoogleSheets', sheetsFormula: '="#"&LOWER(SUBSTITUTE(C2," ",""))' },
+            { category: 'Xử lý văn bản', title: 'Mật khẩu tạm', purpose: 'Tạo mật khẩu', formula: '{Tên}.substring(0,3) + Math.floor(Math.random()*1000)', example: 'Vana789', sheetsFormula: '=LEFT(C2,3)&RANDBETWEEN(0,999)' },
+
+            // NHÓM 6: LOGIC & ĐIỀU KIỆN
+            { category: 'Logic & Điều kiện', title: 'Kiểm tra thanh toán', purpose: 'Tự động cập nhật trạng thái', formula: '{Số tiền đã trả} >= {Tổng tiền} ? "Đã thanh toán" : "Chưa thanh toán"', example: 'Kiểm tra xem đã thanh toán đủ chưa', sheetsFormula: '=IF(C2>=D2,"Đã thanh toán","Chưa thanh toán")' },
+            { category: 'Logic & Điều kiện', title: 'Kiểm tra hợp lệ hóa đơn', purpose: 'Kiểm tra thời hạn', formula: '{Ngày hết hạn} < new Date() ? "Quá hạn" : "Còn hiệu lực"', example: 'Kiểm tra hóa đơn còn hạn không', sheetsFormula: '=IF(C2<TODAY(),"Quá hạn","Còn hiệu lực")' },
+            { category: 'Logic & Điều kiện', title: 'Kiểm tra phê duyệt', purpose: 'Tự động phê duyệt', formula: '{Số tiền} > 10000000 ? "Cần phê duyệt cấp cao" : "Tự phê duyệt"', example: 'Phê duyệt nếu > 10M', sheetsFormula: '=IF(C2>10000000,"Cần phê duyệt cấp cao","Tự phê duyệt")' },
+            { category: 'Logic & Điều kiện', title: 'Chiết khấu VIP', purpose: 'Ưu đãi khách hàng VIP', formula: '{Loại KH} === "VIP" ? {Tổng tiền} * 0.1 : 0', example: 'Giảm 10% cho KH VIP', sheetsFormula: '=IF(C2="VIP",D2*0.1,0)' },
+            { category: 'Logic & Điều kiện', title: 'Xếp loại điểm', purpose: 'Phân loại kết quả', formula: '{Điểm} >= 9 ? "Xuất sắc" : {Điểm} >= 8 ? "Giỏi" : {Điểm} >= 7 ? "Khá" : "Trung bình"', example: 'Xếp loại từ 7-10 điểm', sheetsFormula: '=IF(C2>=9,"Xuất sắc",IF(C2>=8,"Giỏi",IF(C2>=7,"Khá","Trung bình")))' },
+            { category: 'Logic & Điều kiện', title: 'Trạng thái học tập', purpose: 'Đánh giá học sinh', formula: '{Điểm trung bình} >= 8.5 ? "Học sinh giỏi" : {Điểm trung bình} >= 6.5 ? "Học sinh khá" : "Học sinh trung bình"', example: 'Phân loại học sinh', sheetsFormula: '=IF(C2>=8.5,"Giỏi",IF(C2>=6.5,"Khá","Trung bình"))' },
+            { category: 'Logic & Điều kiện', title: 'Đánh giá hiệu suất', purpose: 'Đánh giá KPI', formula: '{KPI} >= 100 ? "Vượt mục tiêu" : {KPI} >= 80 ? "Đạt mục tiêu" : "Chưa đạt"', example: 'Đánh giá KPI nhân viên', sheetsFormula: '=IF(C2>=100,"Vượt mục tiêu",IF(C2>=80,"Đạt mục tiêu","Chưa đạt"))' },
+            { category: 'Logic & Điều kiện', title: 'Mức độ rủi ro', purpose: 'Đánh giá rủi ro', formula: '{Điểm tín dụng} < 600 ? "Cao" : {Điểm tín dụng} < 750 ? "Trung bình" : "Thấp"', example: 'Phân loại rủi ro tín dụng', sheetsFormula: '=IF(C2<600,"Cao",IF(C2<750,"Trung bình","Thấp"))' },
+            { category: 'Logic & Điều kiện', title: 'Phân loại khách hàng', purpose: 'Xếp hạng khách hàng', formula: '{Doanh số} >= 100000000 ? "VIP" : {Doanh số} >= 50000000 ? "Thân thiết" : "Thường"', example: 'Phân loại VIP nếu doanh số >= 100M', sheetsFormula: '=IF(C2>=100000000,"VIP",IF(C2>=50000000,"Thân thiết","Thường"))' },
+            { category: 'Logic & Điều kiện', title: 'Level nhân viên', purpose: 'Phân cấp nhân viên', formula: '{Kinh nghiệm} >= 5 ? "Senior" : {Kinh nghiệm} >= 2 ? "Middle" : "Junior"', example: 'Phân cấp: Senior/Middle/Junior', sheetsFormula: '=IF(C2>=5,"Senior",IF(C2>=2,"Middle","Junior"))' },
+            { category: 'Logic & Điều kiện', title: 'Mức lương', purpose: 'Phân loại lương', formula: '{Chức vụ} === "Giám đốc" ? "Cấp 1" : {Chức vụ} === "Trưởng phòng" ? "Cấp 2" : "Cấp 3"', example: 'Xếp cấp lương theo chức vụ', sheetsFormula: '=IF(C2="Giám đốc","Cấp 1",IF(C2="Trưởng phòng","Cấp 2","Cấp 3"))' },
+            { category: 'Logic & Điều kiện', title: 'Cảnh báo tồn kho', purpose: 'Quản lý kho', formula: '{Số lượng tồn} < {Mức tối thiểu} ? "⚠️ Sắp hết hàng" : "✅ Đủ hàng"', example: 'Cảnh báo khi tồn < ngưỡng', sheetsFormula: '=IF(C2<D2,"⚠️ Sắp hết","✅ Đủ hàng")' },
+            { category: 'Logic & Điều kiện', title: 'Độ ưu tiên công việc', purpose: 'Xếp ưu tiên', formula: '{Mức độ khẩn cấp} === "Cao" ? "🔴 Khẩn cấp" : {Mức độ khẩn cấp} === "Trung bình" ? "🟡 Bình thường" : "🟢 Thấp"', example: 'Đánh dấu ưu tiên bằng màu', sheetsFormula: '=IF(C2="Cao","🔴 Khẩn",IF(C2="TB","🟡 TB","🟢 Thấp"))' },
+            { category: 'Logic & Điều kiện', title: 'Trạng thái dự án', purpose: 'Theo dõi tiến độ', formula: '{Tiến độ} === 100 ? "Hoàn thành" : {Tiến độ} >= 80 ? "Sắp xong" : "Đang thực hiện"', example: 'Hiển thị trạng thái dự án', sheetsFormula: '=IF(C2=100,"Hoàn thành",IF(C2>=80,"Sắp xong","Đang làm"))' },
+            { category: 'Logic & Điều kiện', title: 'Trạng thái đơn hàng', purpose: 'Theo dõi đơn hàng', formula: '{Ngày giao} ? "Đã giao" : {Ngày xử lý} ? "Đang xử lý" : "Chờ xử lý"', example: 'Hiển thị trạng thái đơn hàng', sheetsFormula: '=IF(C2<>"","Đã giao",IF(D2<>"","Đang xử lý","Chờ xử lý"))' },
+            { category: 'Logic & Điều kiện', title: 'Giới tính (anh/chị)', purpose: 'Xưng hô phù hợp', formula: '{Giới tính} === "Nam" ? "Anh" : "Chị"', example: 'Xưng hô theo giới tính', sheetsFormula: '=IF(C2="Nam","Anh","Chị")' },
+            { category: 'Logic & Điều kiện', title: 'Tính OT tự động', purpose: 'Tính lương OT', formula: '{Giờ làm} > 8 ? ({Giờ làm} - 8) * {Lương giờ} * 1.5 : 0', example: 'Tính OT nếu > 8 giờ', sheetsFormula: '=IF(C2>8,(C2-8)*D2*1.5,0)' },
+            { category: 'Logic & Điều kiện', title: 'Tình trạng sức khỏe', purpose: 'Phân loại chăm sóc', formula: '{Tuổi} > 60 ? "Cần chăm sóc đặc biệt" : "Bình thường"', example: 'Cần chăm sóc nếu > 60 tuổi', sheetsFormula: '=IF(C2>60,"Chăm sóc đặc biệt","Bình thường")' },
+            { category: 'Logic & Điều kiện', title: 'Phân ca làm việc', purpose: 'Xếp ca làm việc', formula: '{Giờ vào} < 12 ? "Ca sáng" : {Giờ vào} < 18 ? "Ca chiều" : "Ca tối"', example: 'Phân loại ca: sáng/chiều/tối', sheetsFormula: '=IF(C2<12,"Ca sáng",IF(C2<18,"Ca chiều","Ca tối"))' },
+            { category: 'Logic & Điều kiện', title: 'Tình trạng bảo hành', purpose: 'Kiểm tra bảo hành', formula: 'new Date() < new Date({Ngày mua hàng}).setFullYear(new Date({Ngày mua hàng}).getFullYear() + 1) ? "Còn bảo hành" : "Hết bảo hành"', example: 'Kiểm tra bảo hành 1 năm', sheetsFormula: '=IF(TODAY()<C2+365,"Còn bảo hành","Hết bảo hành")' },
+
+            // NHÓM 7: TOÁN HỌC & THỐNG KÊ
+            { category: 'Toán học & Thống kê', title: 'Tỷ lệ hoàn thành', purpose: 'Tính phần trăm hoàn thành', formula: 'Math.round({Hoàn thành} / {Tổng công việc} * 100) + "%"', example: 'Tính 75% công việc', sheetsFormula: '=ROUND(C2/D2*100,0)&"%"' },
+            { category: 'Toán học & Thống kê', title: 'Tỷ lệ tăng trưởng (%)', purpose: 'Tính phần trăm tăng', formula: 'Math.round(({Hiện tại} - {Trước đó}) / {Trước đó} * 100) + "%"', example: 'Tính tăng trưởng doanh số', sheetsFormula: '=ROUND((C2-D2)/D2*100,0)&"%"' },
+            { category: 'Toán học & Thống kê', title: 'Hiệu suất máy', purpose: 'Tính hiệu suất', formula: 'Math.round({Thời gian hoạt động} / {Tổng thời gian} * 100) + "%"', example: 'Tính % hoạt động của máy', sheetsFormula: '=ROUND(C2/D2*100,0)&"%"' },
+            { category: 'Toán học & Thống kê', title: 'Productivity score', purpose: 'Tính điểm năng suất', formula: 'Math.round({Công việc hoàn thành} / {Công việc giao} * 100)', example: 'Tính % công việc hoàn thành', sheetsFormula: '=ROUND(C2/D2*100,0)' },
+            { category: 'Toán học & Thống kê', title: 'Tỷ lệ chuyển đổi', purpose: 'Tính % chốt đơn', formula: 'Math.round({Số đơn thành công} / {Tổng leads} * 100) + "%"', example: 'Tính 10% tỷ lệ chốt đơn', sheetsFormula: '=ROUND(C2/D2*100,0)&"%"' },
+            { category: 'Toán học & Thống kê', title: 'Tỷ lệ lỗi', purpose: 'Tính phần trăm lỗi', formula: 'Math.round({Số lỗi} / {Tổng sản phẩm} * 100) + "%"', example: 'Tính % lỗi sản phẩm', sheetsFormula: '=ROUND(C2/D2*100,0)&"%"' },
+            { category: 'Toán học & Thống kê', title: 'Điểm trung bình', purpose: 'Tính điểm TB', formula: '({Điểm 1} + {Điểm 2} + {Điểm 3}) / 3', example: 'Tính điểm TB 3 bài', sheetsFormula: '=(C2+D2+E2)/3' },
+            { category: 'Toán học & Thống kê', title: 'Chỉ số BMI', purpose: 'Tính chỉ số BMI', formula: 'Math.round({Cân nặng} / Math.pow({Chiều cao}/100, 2) * 100) / 100', example: 'Tính BMI từ cân nặng & chiều cao', sheetsFormula: '=ROUND(C2/POWER(D2/100,2),1)' },
+            { category: 'Toán học & Thống kê', title: 'Chỉ số hài lòng', purpose: 'Tính điểm hài lòng', formula: 'Math.round({Tổng điểm} / {Số phản hồi} * 10) / 10', example: 'Tính 4.5/5 điểm hài lòng', sheetsFormula: '=ROUND(C2/D2,1)' },
+            { category: 'Toán học & Thống kê', title: 'Độ lệch chuẩn', purpose: 'Tính độ lệch', formula: 'Math.sqrt(Math.pow({Giá trị} - {Trung bình}, 2) / {Số mẫu})', example: 'Tính độ lệch chuẩn dữ liệu', sheetsFormula: '=STDEV(C2:E2)' },
+
+            // NHÓM 8: MÃ & SERIAL & KHÁC
+            { category: 'Mã & Serial', title: 'Mã vạch sản phẩm', purpose: 'Tạo mã vạch', formula: '{Mã loại} + Date.now().toString().slice(-8)', example: 'Tạo mã vạch duy nhất', sheetsFormula: '=C2&TEXT(NOW(),"00000000")' },
+            { category: 'Mã & Serial', title: 'Serial number', purpose: 'Tạo số seri', formula: '{Năm sản xuất}.toString().slice(-2) + {Tháng}.toString().padStart(2, "0") + {ID}.toString().padStart(6, "0")', example: '2312000123', sheetsFormula: '=TEXT(C2,"YY")&TEXT(D2,"00")&TEXT(E2,"000000")' },
+            { category: 'Mã & Serial', title: 'License key', purpose: 'Tạo khóa cấp phép', formula: '{Prefix} + "-" + Math.random().toString(36).substring(2, 8).toUpperCase()', example: 'ABC-D3F5G8', sheetsFormula: '=C2&"-"&CONCATENATE(CHAR(RANDBETWEEN(65,90)),CHAR(RANDBETWEEN(65,90)))' },
+            { category: 'Mã & Serial', title: 'Checksum', purpose: 'Tạo mã kiểm tra', formula: '{Chuỗi dữ liệu}.split("").reduce((a,b) => a + b.charCodeAt(0), 0) % 1000', example: 'Tạo mã kiểm tra cho dữ liệu', sheetsFormula: '=MOD(SUMPRODUCT(SEARCH(MID(C2,ROW(INDIRECT("1:"&LEN(C2))),1),C2)),1000)' },
+            { category: 'Mã & Serial', title: 'Version software', purpose: 'Tạo phiên bản', formula: '{Major} + "." + {Minor} + "." + {Patch}', example: '1.2.3', sheetsFormula: '=C2&"."&D2&"."&E2' },
+            { category: 'Mã & Serial', title: 'API endpoint', purpose: 'Tạo đường dẫn API', formula: '"/api/v1/" + {Resource} + "/" + {ID}', example: '/api/v1/users/123', sheetsFormula: '="/api/v1/"&C2&"/"&D2' },
+            { category: 'Mã & Serial', title: 'Color code', purpose: 'Tạo mã màu', formula: '"#" + Math.floor(Math.random()*16777215).toString(16).padStart(6, "0")', example: '#FF5733', sheetsFormula: '="#"&DEC2HEX(RANDBETWEEN(0,16777215),6)' },
+            { category: 'Mã & Serial', title: 'UUID', purpose: 'Tạo ID duy nhất toàn cầu', formula: '"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => (c=="x"?Math.random()*16|0:(Math.random()*16|0&0x3|0x8)).toString(16))', example: '550e8400-e29b-41d4-a716-446655440000', sheetsFormula: 'Dùng GOOGLE SHEETS không hỗ trợ' },
+            { category: 'Mã & Serial', title: 'GPS coordinates', purpose: 'Tạo tọa độ GPS', formula: '{Vĩ độ} + "," + {Kinh độ}', example: '10.762622, 106.660172', sheetsFormula: '=C2&", "&D2' },
+            { category: 'Mã & Serial', title: 'QR data (vCard)', purpose: 'Tạo dữ liệu QR', formula: '"BEGIN:VCARD FN:" + {Họ tên} + " TEL:" + {SĐT} + " EMAIL:" + {Email} + " END:VCARD"', example: 'Dữ liệu vCard cho QR code', sheetsFormula: '="BEGIN:VCARD FN:"&C2&" TEL:"&D2&" EMAIL:"&E2&" END:VCARD"' }
+        ];
+
+        let currentCategory = 'all';
+        let searchTerm = '';
+
+        // Hàm khởi tạo
+        function init() {
+            displayCategories();
+            displayFormulas(formulas);
+            document.getElementById('totalFormulas').textContent = formulas.length;
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') performSearch();
+            });
+        }
+
+        // Hiển thị danh mục
+        function displayCategories() {
+            const categories = [...new Set(formulas.map(f => f.category))];
+            const section = document.getElementById('categoriesSection');
+            
+            let html = '<button class="category-btn active" onclick="filterByCategory(\'all\')">Tất Cả</button>';
+            categories.forEach(cat => {
+                html += `<button class="category-btn" onclick="filterByCategory('${cat}')">📂 ${cat}</button>`;
+            });
+            section.innerHTML = html;
+        }
+
+        // Hiển thị công thức
+        function displayFormulas(toDisplay) {
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.innerHTML = '';
+
+            if (toDisplay.length === 0) {
+                resultsSection.innerHTML = '<div class="no-results">😕 Không tìm thấy công thức. Hãy thử từ khóa khác!</div>';
+                document.getElementById('displayCount').textContent = '0';
+                return;
+            }
+
+            toDisplay.forEach(formula => {
+                const card = document.createElement('div');
+                card.className = 'formula-card';
+                card.innerHTML = `
+                    <span class="category-tag">📂 ${formula.category}</span>
+                    <h3>🔷 ${formula.title}</h3>
+                    <p><span class="label">Mục đích:</span> ${formula.purpose}</p>
+                    <p><span class="label">Apps Script:</span></p>
+                    <div class="code-block" onclick="copyFormula(this)">${escapeHtml(formula.formula)}</div>
+                    <p><span class="label">Google Sheets:</span></p>
+                    <div class="code-block" onclick="copyFormula(this)">${escapeHtml(formula.sheetsFormula)}</div>
+                    <p><span class="label">Ví dụ:</span> ${formula.example}</p>
+                    <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(formula.formula)}', this)">📋 Sao chép Apps Script</button>
+                    <button class="copy-btn" onclick="copyToClipboard('${escapeHtml(formula.sheetsFormula)}', this)">📋 Sao chép Sheets</button>
+                `;
+                resultsSection.appendChild(card);
+            });
+
+            document.getElementById('displayCount').textContent = toDisplay.length;
+        }
+
+        // Sao chép bằng click vào code block
+        function copyFormula(element) {
+            const text = element.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalBg = element.style.background;
+                element.style.background = '#d4edda';
+                setTimeout(() => {
+                    element.style.background = originalBg;
+                }, 300);
+            });
+        }
+
+        // Lọc theo danh mục
+        function filterByCategory(category) {
+            currentCategory = category;
+            searchTerm = '';
+            document.getElementById('searchInput').value = '';
+
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const filtered = category === 'all' 
+                ? formulas 
+                : formulas.filter(f => f.category === category);
+            
+            displayFormulas(filtered);
+        }
+
+        // Tìm kiếm
+        function performSearch() {
+            searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                filterByCategory(currentCategory);
+                return;
+            }
+
+            const filtered = formulas.filter(f => 
+                f.title.toLowerCase().includes(searchTerm) ||
+                f.purpose.toLowerCase().includes(searchTerm) ||
+                f.example.toLowerCase().includes(searchTerm) ||
+                f.formula.toLowerCase().includes(searchTerm) ||
+                f.category.toLowerCase().includes(searchTerm)
+            );
+
+            displayFormulas(filtered);
+        }
+
+        // Xóa tìm kiếm
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            currentCategory = 'all';
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('.category-btn').classList.add('active');
+            displayFormulas(formulas);
+        }
+
+        // Sao chép vào clipboard
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(unescapeHtml(text)).then(() => {
+                const originalText = button.textContent;
+                button.textContent = '✅ Đã sao chép!';
+                button.classList.add('copied');
+
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 1500);
+            }).catch(err => {
+                alert('Lỗi sao chép: ' + err);
+            });
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Unescape HTML
+        function unescapeHtml(text) {
+            const map = {
+                '&amp;': '&',
+                '&lt;': '<',
+                '&gt;': '>',
+                '&quot;': '"',
+                '&#039;': "'"
+            };
+            return text.replace(/&amp;|&lt;|&gt;|&quot;|&#039;/g, m => map[m]);
+        }
+
+        // Khởi tạo
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
